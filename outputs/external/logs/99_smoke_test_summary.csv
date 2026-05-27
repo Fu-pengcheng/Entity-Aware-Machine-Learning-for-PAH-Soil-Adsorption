@@ -1,0 +1,11 @@
+test_name,status,n_rows,message,seconds
+primary_excel_read,PASS,1408.0,read ok,0.0
+external_excel_read,PASS,20945.0,read ok,0.0
+scripts/00_audit_datasets.py,PASS,,"Audit done. Primary rows=1408, cols=12; External rows=20945, cols=26",6.388
+scripts/01_primary_empirical_baselines.py --smoke,PASS,,01 done.,3.185
+scripts/02_primary_ml_validation.py --smoke,PASS,,02 done.,5.567
+scripts/03_primary_layer_ablation.py --smoke,PASS,,03 done.,8.319
+scripts/04_primary_ad_diagnosis.py --smoke,PASS,,04 done.,3.684
+scripts/05_primary_few_shot_calibration.py --smoke,PASS,,05 done.,3.222
+scripts/06_primary_error_decomposition.py --smoke,PASS,,06 done.,3.078
+scripts/07_external_validation.py --smoke,PASS,,"07 done.; smoke",3.677

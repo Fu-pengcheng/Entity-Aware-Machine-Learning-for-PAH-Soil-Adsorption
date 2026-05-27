@@ -1,0 +1,13 @@
+﻿required_column,present_after_mapping
+Soil_ID,True
+OC,True
+pH,True
+Clay,True
+CEC,True
+T,True
+Ratio,True
+logKow,True
+lnCe,True
+HOMO,True
+LUMO,True
+lnQe,True

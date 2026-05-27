@@ -1,0 +1,68 @@
+{
+  "primary": {
+    "n_rows": 1408,
+    "n_cols": 12,
+    "columns": [
+      "Soil_ID",
+      "OC",
+      "pH",
+      "Clay",
+      "CEC",
+      "T",
+      "Ratio",
+      "logKow",
+      "lnCe",
+      "HOMO",
+      "LUMO",
+      "lnQe"
+    ],
+    "missing_required_cols": [],
+    "renamed": {
+      "ln_Qe": "lnQe"
+    }
+  },
+  "external": {
+    "n_rows": 20945,
+    "n_cols": 26,
+    "columns": [
+      "Data Index",
+      "Isotherm Index",
+      "logKd",
+      "logCe",
+      "Compound name",
+      "CAS Number",
+      "SMILES",
+      "Isotherm",
+      "Kd/Kf",
+      "Exponent",
+      "Unit of Kf",
+      "log soil-solution ratio",
+      "Experimental pH",
+      "soil pH",
+      "soil organic carbon",
+      "CEC",
+      "Clay",
+      "pKb",
+      "pKa",
+      "pKa type",
+      "Chemical group index",
+      "Cation fraction",
+      "Neutral fraction",
+      "Anion fraction",
+      "Acticle",
+      "Soil_ID_inferred"
+    ],
+    "missing_min_required_cols": [],
+    "renamed": {
+      "log Kd": "logKd",
+      "log Ce": "logCe",
+      "SOC(%)": "soil organic carbon",
+      "Soil pH": "soil pH",
+      "Clay(%)": "Clay",
+      "CEC(cmol+/kg)": "CEC",
+      "log SS ratio": "log soil-solution ratio"
+    },
+    "soil_entity_inferred": true,
+    "n_soils_inferred": 1037
+  }
+}

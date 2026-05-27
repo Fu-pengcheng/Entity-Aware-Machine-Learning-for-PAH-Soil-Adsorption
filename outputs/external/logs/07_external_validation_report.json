@@ -1,0 +1,63 @@
+{
+  "mode": "framework_only",
+  "n_rows": 20945,
+  "n_cols": 26,
+  "columns": [
+    "Data Index",
+    "Isotherm Index",
+    "logKd",
+    "logCe",
+    "Compound name",
+    "CAS Number",
+    "SMILES",
+    "Isotherm",
+    "Kd/Kf",
+    "Exponent",
+    "Unit of Kf",
+    "log soil-solution ratio",
+    "Experimental pH",
+    "soil pH",
+    "soil organic carbon",
+    "CEC",
+    "Clay",
+    "pKb",
+    "pKa",
+    "pKa type",
+    "Chemical group index",
+    "Cation fraction",
+    "Neutral fraction",
+    "Anion fraction",
+    "Acticle",
+    "Soil_ID_inferred"
+  ],
+  "target_col": "logKd",
+  "target_present": true,
+  "soil_entity_inferred": true,
+  "n_soils_inferred": 1037,
+  "soil_entity_inference": {
+    "method": "exact_groupby",
+    "columns": [
+      "soil pH",
+      "soil organic carbon",
+      "CEC",
+      "Clay"
+    ],
+    "dropna": false
+  },
+  "available_scalar_features": [
+    "logCe",
+    "soil organic carbon",
+    "Clay",
+    "CEC",
+    "soil pH",
+    "log soil-solution ratio"
+  ],
+  "missing_scalar_features": [
+    "logP",
+    "logS"
+  ],
+  "has_logP": false,
+  "has_logS": false,
+  "full_external_validation_executed": false,
+  "note": "Framework migrated. Full external validation intentionally skipped in this stage."
+}

@@ -1,0 +1,28 @@
+# Python cache
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+*.pyc
+
+# Data files (local only, do not publish raw data)
+Data/raw/*.xlsx
+Data/raw/*.csv
+Data/processed/*.csv
+
+# Outputs (default ignore generated artifacts)
+outputs/**/predictions/*.csv
+outputs/**/figures/*.png
+outputs/**/tables/*.csv
+outputs/**/logs/*.log
+
+# Keep smoke/audit artifacts and structure markers
+!outputs/**/.gitkeep
+!outputs/primary/logs/99_smoke_test_summary.csv
+!outputs/primary/logs/99_smoke_test_summary.json
+!outputs/external/logs/99_smoke_test_summary.csv
+!outputs/primary/logs/audit_summary.json
+!outputs/external/logs/audit_summary.json
+!outputs/external/logs/07_external_validation_report.json
+!outputs/primary/tables/audit_*.csv
+!outputs/external/tables/audit_*.csv
+!outputs/external/tables/07_external_columns_mapped.csv

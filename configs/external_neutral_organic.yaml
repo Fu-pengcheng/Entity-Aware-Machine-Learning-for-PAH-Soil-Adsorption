@@ -1,0 +1,44 @@
+dataset_name: external_neutral_organic
+input_data_path: Data/raw/neutral_organic_adsorption_external_raw.xlsx
+sheet_name: Dataset
+compound_lookup_path: null
+notes:
+  - logP/logS are currently not present in the external raw file by default.
+  - set compound_lookup_path to a local lookup table if logP/logS are required for full external validation.
+output_paths:
+  primary_root: outputs/primary
+  external_root: outputs/external
+
+target_col: logKd
+group_col: null
+
+scalar_features:
+  - logCe
+  - soil organic carbon
+  - Clay
+  - CEC
+  - soil pH
+  - log soil-solution ratio
+  - logP
+  - logS
+
+model: ExtraTreesRegressor
+model_params:
+  n_estimators: 200
+  max_depth: 15
+  min_samples_split: 5
+  random_state: 42
+
+preprocessing:
+  impute_strategy: median
+  standardize: true
+
+soil_entity_inference:
+  method: exact_groupby
+  columns: [soil pH, soil organic carbon, CEC, Clay]
+  dropna: false
+
+smoke:
+  enabled: true
+  synthetic_rows: 140
+  synthetic_soils: 10

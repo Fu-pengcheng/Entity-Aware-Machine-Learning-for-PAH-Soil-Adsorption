@@ -1,0 +1,8 @@
+﻿required_column,present_after_mapping
+logKd,True
+logCe,True
+soil organic carbon,True
+Clay,True
+CEC,True
+soil pH,True
+log soil-solution ratio,True
