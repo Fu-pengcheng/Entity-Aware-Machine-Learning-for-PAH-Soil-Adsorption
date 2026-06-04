@@ -1,6 +1,6 @@
-# Analysis Workflow Skeleton (PAH Soil Adsorption)
+# Analysis Workflow (PAH Soil Adsorption)
 
-This folder is a lightweight, GitHub-ready workflow skeleton migrated from existing local analysis code.
+This folder is a lightweight, GitHub-ready workflow migrated from existing local analysis code.
 
 This repository provides an **analysis workflow scaffold** plus **reproducible scripts**, not a claim that all final manuscript results are already regenerated.
 
@@ -14,10 +14,11 @@ This repository provides an **analysis workflow scaffold** plus **reproducible s
   - Modeling scripts: run on tiny synthetic data only.
 - Do **not** run full LOSO/random/few-shot/external full experiments in this stage unless explicitly approved.
 
-## Raw data placement (read-only)
+## Raw data availability and placement (read-only)
 
-Place raw data under `Data/raw/` in the project root (outside this folder).
-Raw data are **not** distributed by this repository.
+The two raw Excel datasets used by the workflow are currently tracked in this repository under `Data/raw/` to support manuscript-level reproducibility checks. Treat these files as read-only inputs: do not move, overwrite, or edit them during analysis.
+
+If a downstream copy of the repository omits raw data for policy or storage reasons, place the same files under `Data/raw/` before running audits or full analyses.
 
 Required filenames:
 
@@ -40,6 +41,16 @@ python scripts/99_run_smoke_tests.py
 ```
 
 Current scaffold status: smoke testing has been completed successfully for dataset readability, auditing, and script executability on tiny synthetic inputs.
+
+## Manuscript value checks
+
+After full outputs are generated on a suitable machine, compare reproduced CSV/JSON values against manuscript targets with:
+
+```bash
+python scripts/check_manuscript_values.py
+```
+
+The checker contains conservative built-in audit/smoke checks and can be extended with a YAML file of manuscript metric targets.
 
 ## Full workflow commands (manual, optional)
 

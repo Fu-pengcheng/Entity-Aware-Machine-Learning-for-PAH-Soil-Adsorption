@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import hashlib
+
 import numpy as np
 import pandas as pd
 
 from src.metrics import calc_regression_metrics
+
+
+def _stable_hash_mod(value: object, modulo: int) -> int:
+    digest = hashlib.sha256(str(value).encode("utf-8")).hexdigest()
+    return int(digest[:16], 16) % int(modulo)
 
 
 def few_shot_additive_calibration(
@@ -57,7 +64,8 @@ def few_shot_additive_calibration(
                 continue
             idx_all = soil_df.index.to_numpy()
             for rep in range(int(repeats)):
-                rng = np.random.default_rng(int(seed + rep + 1000 * m + (hash(soil_id) % 997)))
+                soil_seed = _stable_hash_mod(soil_id, modulo=997)
+                rng = np.random.default_rng(int(seed + rep + 1000 * m + soil_seed))
                 cal_idx = np.sort(rng.choice(idx_all, size=int(m), replace=False))
                 cal_set = set(int(x) for x in cal_idx)
                 test_idx = np.array([int(x) for x in idx_all if int(x) not in cal_set], dtype=int)
@@ -181,4 +189,3 @@ def few_shot_additive_calibration(
         "metrics_summary": summary_df,
         "comparable_summary": comparable_summary,
     }
-
