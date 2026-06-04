@@ -1,0 +1,11 @@
+PASS	n_rows	expected=1408.0	reproduced=1408.0	tolerance=0.0	diff=0.0
+PASS	n_soils	expected=142.0	reproduced=142.0	tolerance=0.0	diff=0.0
+PASS	n_pahs	expected=5.0	reproduced=5.0	tolerance=0.0	diff=0.0
+FAIL	xgb_random_r2	expected=0.939	reproduced=0.9265399101441332	tolerance=0.002	diff=0.012460089855866774
+FAIL	xgb_loso_r2	expected=0.649	reproduced=0.6422760767615363	tolerance=0.002	diff=0.006723923238463714
+FAIL	xgb_generalization_gap	expected=0.29	reproduced=0.28426383338259686	tolerance=0.003	diff=0.005736166617403116
+FAIL	support_q4_q1_mae_ratio	expected=2.02	reproduced=1.9167351381455093	tolerance=0.03	diff=0.10326486185449069
+FAIL	soil_level_bias_ratio	expected=0.843	reproduced=0.8206575466440662	tolerance=0.003	diff=0.022342453355933767
+PASS	fewshot_m3_calibrated_r2	expected=0.901	reproduced=0.8982122728560146	tolerance=0.003	diff=0.0027877271439854523
+PASS	fewshot_m5_calibrated_r2	expected=0.908	reproduced=0.9068154273317883	tolerance=0.003	diff=0.001184572668211703
+Summary: PASS=5, FAIL=5, MISSING=0

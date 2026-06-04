@@ -2,6 +2,9 @@
   "primary": {
     "n_rows": 1408,
     "n_cols": 12,
+    "n_soils": 142,
+    "n_pahs": 5,
+    "pah_count_basis": "logKow+HOMO+LUMO",
     "columns": [
       "Soil_ID",
       "OC",

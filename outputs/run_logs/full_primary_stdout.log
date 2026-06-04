@@ -1,0 +1,14 @@
+[2026-06-04T16:03:17] running scripts/00_audit_datasets.py
+[2026-06-04T16:03:21] scripts/00_audit_datasets.py -> PASS in 4.259 s
+[2026-06-04T16:03:21] running scripts/01_primary_empirical_baselines.py
+[2026-06-04T16:03:29] scripts/01_primary_empirical_baselines.py -> PASS in 7.452 s
+[2026-06-04T16:03:29] running scripts/02_primary_ml_validation.py
+[2026-06-04T16:27:30] scripts/02_primary_ml_validation.py -> PASS in 1440.681 s
+[2026-06-04T16:27:30] running scripts/03_primary_layer_ablation.py
+[2026-06-04T17:35:18] scripts/03_primary_layer_ablation.py -> PASS in 4068.055 s
+[2026-06-04T17:35:18] running scripts/04_primary_ad_diagnosis.py
+[2026-06-04T17:56:42] scripts/04_primary_ad_diagnosis.py -> PASS in 1284.675 s
+[2026-06-04T17:56:42] running scripts/05_primary_few_shot_calibration.py
+[2026-06-04T18:17:57] scripts/05_primary_few_shot_calibration.py -> PASS in 1274.884 s
+[2026-06-04T18:17:57] running scripts/06_primary_error_decomposition.py
+[2026-06-04T18:40:21] scripts/06_primary_error_decomposition.py -> PASS in 1343.41 s

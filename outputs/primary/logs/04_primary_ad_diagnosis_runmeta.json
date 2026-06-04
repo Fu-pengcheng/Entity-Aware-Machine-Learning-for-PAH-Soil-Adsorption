@@ -1,0 +1,6 @@
+{
+  "script": "04_primary_ad_diagnosis.py",
+  "smoke": false,
+  "n_rows": 1408,
+  "n_samples_ad": 1408
+}

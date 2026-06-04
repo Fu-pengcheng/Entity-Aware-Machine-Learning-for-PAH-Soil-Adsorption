@@ -1,0 +1,6 @@
+{
+  "script": "06_primary_error_decomposition.py",
+  "smoke": false,
+  "n_rows": 1408,
+  "n_soils": 142
+}

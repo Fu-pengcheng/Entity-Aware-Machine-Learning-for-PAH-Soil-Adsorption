@@ -1,0 +1,12 @@
+{
+  "script": "05_primary_few_shot_calibration.py",
+  "smoke": false,
+  "repeats": 30,
+  "m_values": [
+    1,
+    3,
+    5,
+    10
+  ],
+  "n_rows": 1408
+}
