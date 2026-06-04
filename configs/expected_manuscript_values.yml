@@ -1,0 +1,31 @@
+primary:
+  n_rows:
+    expected: 1408
+    tolerance: 0
+  n_soils:
+    expected: 142
+    tolerance: 0
+  n_pahs:
+    expected: 5
+    tolerance: 0
+  xgb_random_r2:
+    expected: 0.939
+    tolerance: 0.002
+  xgb_loso_r2:
+    expected: 0.649
+    tolerance: 0.002
+  xgb_generalization_gap:
+    expected: 0.290
+    tolerance: 0.003
+  support_q4_q1_mae_ratio:
+    expected: 2.02
+    tolerance: 0.03
+  soil_level_bias_ratio:
+    expected: 0.843
+    tolerance: 0.003
+  fewshot_m3_calibrated_r2:
+    expected: 0.901
+    tolerance: 0.003
+  fewshot_m5_calibrated_r2:
+    expected: 0.908
+    tolerance: 0.003

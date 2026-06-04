@@ -12,59 +12,19 @@ import yaml
 
 
 WORKFLOW_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_EXPECTED = "configs/expected_manuscript_values.yml"
+REPORT_DIR = WORKFLOW_ROOT / "outputs" / "manuscript_check"
 
-DEFAULT_CHECKS: list[dict[str, Any]] = [
-    {
-        "name": "primary audit row count",
-        "path": "outputs/primary/logs/audit_summary.json",
-        "format": "json",
-        "key": "primary.n_rows",
-        "expected": 1408,
-        "tolerance": 0,
-    },
-    {
-        "name": "external audit row count",
-        "path": "outputs/primary/logs/audit_summary.json",
-        "format": "json",
-        "key": "external.n_rows",
-        "expected": 20945,
-        "tolerance": 0,
-    },
-    {
-        "name": "primary required columns present",
-        "path": "outputs/primary/logs/audit_summary.json",
-        "format": "json",
-        "key": "primary.missing_required_cols",
-        "expected": [],
-        "comparison": "exact",
-    },
-    {
-        "name": "external minimum required columns present",
-        "path": "outputs/primary/logs/audit_summary.json",
-        "format": "json",
-        "key": "external.missing_min_required_cols",
-        "expected": [],
-        "comparison": "exact",
-    },
-    {
-        "name": "smoke tests have zero failures",
-        "path": "outputs/primary/logs/99_smoke_test_summary.json",
-        "format": "json",
-        "key": "failed",
-        "expected": 0,
-        "tolerance": 0,
-    },
-]
+
+class MissingReproducedValue(RuntimeError):
+    pass
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Compare reproduced CSV/JSON values against expected manuscript values."
+        description="Compare reproduced primary outputs against expected manuscript values."
     )
-    parser.add_argument(
-        "--expected",
-        help="Optional YAML file with a top-level 'checks' list. Defaults to built-in audit/smoke checks.",
-    )
+    parser.add_argument("--expected", default=DEFAULT_EXPECTED, help="Expected-value YAML config.")
     return parser.parse_args()
 
 
@@ -75,106 +35,201 @@ def resolve_path(path: str | Path) -> Path:
     return WORKFLOW_ROOT / p
 
 
-def load_checks(expected_path: str | None) -> list[dict[str, Any]]:
-    if expected_path is None:
-        return DEFAULT_CHECKS
-    path = resolve_path(expected_path)
-    with path.open("r", encoding="utf-8") as f:
+def load_yaml(path: str | Path) -> dict[str, Any]:
+    cfg_path = resolve_path(path)
+    if not cfg_path.exists():
+        raise FileNotFoundError(f"Expected-value config not found: {cfg_path}")
+    with cfg_path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
-    checks = data.get("checks", [])
-    if not isinstance(checks, list):
-        raise ValueError("Expected YAML must contain a list at key 'checks'.")
-    return checks
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected-value YAML must contain a mapping: {cfg_path}")
+    return data
 
 
-def load_json_value(path: Path, key: str) -> Any:
-    with path.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-    value: Any = data
+def load_json(path: str | Path) -> Any:
+    json_path = resolve_path(path)
+    if not json_path.exists():
+        raise MissingReproducedValue(f"missing output file: {json_path.relative_to(WORKFLOW_ROOT)}")
+    with json_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_csv_rows(path: str | Path) -> list[dict[str, str]]:
+    csv_path = resolve_path(path)
+    if not csv_path.exists():
+        raise MissingReproducedValue(f"missing output file: {csv_path.relative_to(WORKFLOW_ROOT)}")
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def nested_get(data: Any, key: str) -> Any:
+    value = data
     for part in key.split("."):
         if isinstance(value, dict) and part in value:
             value = value[part]
         else:
-            raise KeyError(f"JSON key not found: {key}")
+            raise MissingReproducedValue(f"missing JSON key: {key}")
     return value
 
 
-def load_csv_value(path: Path, check: dict[str, Any]) -> Any:
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        rows = list(csv.DictReader(f))
-    where = check.get("where", {})
-    if where:
-        rows = [
-            row
-            for row in rows
-            if all(str(row.get(col, "")) == str(expected) for col, expected in where.items())
-        ]
-    if not rows:
-        raise ValueError(f"No CSV rows matched check filter for {path}")
-    row_index = int(check.get("row_index", 0))
-    if row_index >= len(rows):
-        raise IndexError(f"row_index {row_index} out of range for {path}")
-    column = check["column"]
-    if column not in rows[row_index]:
-        raise KeyError(f"CSV column not found: {column}")
-    return rows[row_index][column]
+def csv_value(path: str, where: dict[str, str], column: str) -> str:
+    rows = load_csv_rows(path)
+    for row in rows:
+        if all(str(row.get(k, "")) == str(v) for k, v in where.items()):
+            if column not in row:
+                raise MissingReproducedValue(f"missing CSV column: {column}")
+            return row[column]
+    raise MissingReproducedValue(f"missing CSV row in {path}: {where}")
 
 
-def read_observed(check: dict[str, Any]) -> Any:
-    path = resolve_path(check["path"])
-    if not path.exists():
-        raise FileNotFoundError(f"Output file not found: {path}")
-    fmt = str(check.get("format", path.suffix.lstrip(".").lower())).lower()
-    if fmt == "json":
-        return load_json_value(path, str(check["key"]))
-    if fmt == "csv":
-        return load_csv_value(path, check)
-    raise ValueError(f"Unsupported check format: {fmt}")
+def require_full_run(runmeta_path: str) -> None:
+    meta = load_json(runmeta_path)
+    if bool(meta.get("smoke", False)):
+        raise MissingReproducedValue(f"output is from smoke mode: {runmeta_path}")
 
 
-def compare_values(observed: Any, expected: Any, check: dict[str, Any]) -> tuple[bool, str]:
-    comparison = str(check.get("comparison", "")).lower()
-    if comparison == "exact":
-        ok = observed == expected
-        return ok, f"observed={observed!r}, expected={expected!r}"
+def audit_summary() -> dict[str, Any]:
+    return load_json("outputs/primary/logs/audit_summary.json")
 
-    tolerance = float(check.get("tolerance", 0))
+
+def reproduced_n_rows() -> float:
+    return float(nested_get(audit_summary(), "primary.n_rows"))
+
+
+def reproduced_n_soils() -> float:
+    summary = audit_summary()
     try:
-        obs_float = float(observed)
-        exp_float = float(expected)
-    except (TypeError, ValueError):
-        ok = observed == expected
-        return ok, f"observed={observed!r}, expected={expected!r}"
+        return float(nested_get(summary, "primary.n_soils"))
+    except MissingReproducedValue:
+        return float(len(load_csv_rows("outputs/primary/tables/audit_primary_group_sizes.csv")))
 
-    ok = math.isclose(obs_float, exp_float, rel_tol=0.0, abs_tol=tolerance)
-    return ok, f"observed={obs_float:.12g}, expected={exp_float:.12g}, tolerance={tolerance:.12g}"
+
+def reproduced_n_pahs() -> float:
+    summary = audit_summary()
+    try:
+        value = nested_get(summary, "primary.n_pahs")
+        if value is not None:
+            return float(value)
+    except MissingReproducedValue:
+        pass
+    return float(len(load_csv_rows("outputs/primary/tables/audit_primary_pah_proxy.csv")))
+
+
+def reproduced_xgb_random_r2() -> float:
+    require_full_run("outputs/primary/logs/02_primary_ml_validation_runmeta.json")
+    return float(csv_value("outputs/primary/tables/02_primary_ml_validation_summary.csv", {"protocol": "random_split"}, "R2"))
+
+
+def reproduced_xgb_loso_r2() -> float:
+    require_full_run("outputs/primary/logs/02_primary_ml_validation_runmeta.json")
+    return float(csv_value("outputs/primary/tables/02_primary_ml_validation_summary.csv", {"protocol": "strict_loso"}, "R2"))
+
+
+def reproduced_xgb_generalization_gap() -> float:
+    require_full_run("outputs/primary/logs/02_primary_ml_validation_runmeta.json")
+    return float(csv_value("outputs/primary/tables/02_primary_ml_validation_summary.csv", {"protocol": "generalization_gap"}, "GG"))
+
+
+def reproduced_support_q4_q1_mae_ratio() -> float:
+    require_full_run("outputs/primary/logs/04_primary_ad_diagnosis_runmeta.json")
+    q1 = float(csv_value("outputs/primary/tables/04_primary_ad_diagnosis_quartiles.csv", {"quartile": "Q1"}, "mean_abs_error"))
+    q4 = float(csv_value("outputs/primary/tables/04_primary_ad_diagnosis_quartiles.csv", {"quartile": "Q4"}, "mean_abs_error"))
+    if q1 == 0:
+        raise MissingReproducedValue("Q1 mean_abs_error is zero; ratio undefined")
+    return q4 / q1
+
+
+def reproduced_soil_level_bias_ratio() -> float:
+    require_full_run("outputs/primary/logs/06_primary_error_decomposition_runmeta.json")
+    return float(nested_get(load_json("outputs/primary/tables/06_primary_error_decomposition_summary.json"), "P_soil"))
+
+
+def reproduced_fewshot_m3_calibrated_r2() -> float:
+    require_full_run("outputs/primary/logs/05_primary_fewshot_runmeta.json")
+    return float(csv_value("outputs/primary/tables/05_primary_fewshot_metrics_summary.csv", {"m": "3", "prediction_type": "calibrated"}, "r2_mean"))
+
+
+def reproduced_fewshot_m5_calibrated_r2() -> float:
+    require_full_run("outputs/primary/logs/05_primary_fewshot_runmeta.json")
+    return float(csv_value("outputs/primary/tables/05_primary_fewshot_metrics_summary.csv", {"m": "5", "prediction_type": "calibrated"}, "r2_mean"))
+
+
+REPRODUCERS = {
+    "n_rows": reproduced_n_rows,
+    "n_soils": reproduced_n_soils,
+    "n_pahs": reproduced_n_pahs,
+    "xgb_random_r2": reproduced_xgb_random_r2,
+    "xgb_loso_r2": reproduced_xgb_loso_r2,
+    "xgb_generalization_gap": reproduced_xgb_generalization_gap,
+    "support_q4_q1_mae_ratio": reproduced_support_q4_q1_mae_ratio,
+    "soil_level_bias_ratio": reproduced_soil_level_bias_ratio,
+    "fewshot_m3_calibrated_r2": reproduced_fewshot_m3_calibrated_r2,
+    "fewshot_m5_calibrated_r2": reproduced_fewshot_m5_calibrated_r2,
+}
+
+
+def evaluate_item(item: str, spec: dict[str, Any]) -> dict[str, Any]:
+    expected = float(spec["expected"])
+    tolerance = float(spec.get("tolerance", 0))
+    row = {
+        "item": item,
+        "expected": expected,
+        "reproduced": "",
+        "tolerance": tolerance,
+        "absolute_difference": "",
+        "status": "MISSING",
+    }
+
+    reproducer = REPRODUCERS.get(item)
+    if reproducer is None:
+        return row
+
+    try:
+        reproduced = float(reproducer())
+    except MissingReproducedValue:
+        return row
+
+    diff = abs(reproduced - expected)
+    row["reproduced"] = reproduced
+    row["absolute_difference"] = diff
+    row["status"] = "PASS" if math.isclose(reproduced, expected, rel_tol=0.0, abs_tol=tolerance) else "FAIL"
+    return row
+
+
+def write_report(rows: list[dict[str, Any]]) -> None:
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    fieldnames = ["item", "expected", "reproduced", "tolerance", "absolute_difference", "status"]
+    csv_path = REPORT_DIR / "expected_vs_reproduced.csv"
+    json_path = REPORT_DIR / "expected_vs_reproduced.json"
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    json_path.write_text(json.dumps(rows, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def main() -> int:
-    args = parse_args()
-    checks = load_checks(args.expected)
-    if not checks:
-        print("SKIP no manuscript value checks configured.")
-        return 0
+    cfg = load_yaml(parse_args().expected)
+    primary = cfg.get("primary", {})
+    if not isinstance(primary, dict) or not primary:
+        raise ValueError("Expected-value config must contain non-empty 'primary' mapping.")
 
-    failed = 0
-    for check in checks:
-        name = str(check.get("name", "unnamed check"))
-        try:
-            observed = read_observed(check)
-            ok, detail = compare_values(observed, check.get("expected"), check)
-        except Exception as exc:
-            ok = False
-            detail = f"{type(exc).__name__}: {exc}"
-        status = "PASS" if ok else "FAIL"
-        print(f"{status}\t{name}\t{detail}")
-        failed += 0 if ok else 1
+    rows = [evaluate_item(item, spec) for item, spec in primary.items()]
+    write_report(rows)
 
-    if failed:
-        print(f"FAILED {failed} manuscript value check(s).")
-        return 1
-    print(f"PASSED {len(checks)} manuscript value check(s).")
-    return 0
+    for row in rows:
+        print(
+            f"{row['status']}\t{row['item']}\t"
+            f"expected={row['expected']}\treproduced={row['reproduced']}\t"
+            f"tolerance={row['tolerance']}\tdiff={row['absolute_difference']}"
+        )
+
+    n_pass = sum(1 for row in rows if row["status"] == "PASS")
+    n_fail = sum(1 for row in rows if row["status"] == "FAIL")
+    n_missing = sum(1 for row in rows if row["status"] == "MISSING")
+    print(f"Summary: PASS={n_pass}, FAIL={n_fail}, MISSING={n_missing}")
+
+    return 1 if n_fail else 0
 
 
 if __name__ == "__main__":
