@@ -1,18 +1,20 @@
 # Analysis Workflow (PAH Soil Adsorption)
 
-This folder is a lightweight, GitHub-ready workflow migrated from existing local analysis code.
+This repository provides supporting code, raw data, and analysis scripts for conclusion-level verification of the PAH soil adsorption study.
 
-This repository provides an **analysis workflow scaffold** plus **reproducible scripts**, not a claim that all final manuscript results are already regenerated.
+The goal is to make the analysis logic, validation design, and main scientific conclusions inspectable and rerunnable. It is not intended to reproduce every historical exploratory manuscript number digit-for-digit.
 
-## Scope of this stage
+## Scope
 
 - Reuse existing logic where possible.
 - Standardize structure, entry scripts, and YAML-based paths.
 - Keep raw data untouched.
-- Run smoke tests only:
-  - Real Excel files: read + audit only.
-  - Modeling scripts: run on tiny synthetic data only.
-- Do **not** run full LOSO/random/few-shot/external full experiments in this stage unless explicitly approved.
+- Provide smoke tests for code-path checks.
+- Provide a full primary workflow for the primary PAH dataset.
+- Provide conclusion-level checks for core findings.
+- Keep external validation separate until the remaining descriptor lookup is resolved.
+
+Machine-learning workflows can vary slightly across machines because of stochastic training, parallel execution, BLAS/OpenMP behavior, and dependency versions. This repository therefore checks whether reproduced outputs support the same analysis logic and conclusions, rather than treating exact historical values as the public pass/fail criterion.
 
 ## Raw data availability and placement (read-only)
 
@@ -31,7 +33,7 @@ Required filenames:
 pip install -r requirements.txt
 ```
 
-## Smoke test run
+## Smoke Test Run
 
 From `analysis_workflow/`:
 
@@ -40,22 +42,37 @@ python scripts/00_audit_datasets.py
 python scripts/99_run_smoke_tests.py
 ```
 
-Current scaffold status: smoke testing has been completed successfully for dataset readability, auditing, and script executability on tiny synthetic inputs.
+Smoke tests check dataset readability, auditing, and script executability on tiny synthetic inputs. Smoke outputs are not manuscript results.
 
-## Manuscript value checks
+## Full Primary Workflow
 
-After full outputs are generated on a suitable machine, compare reproduced CSV/JSON values against manuscript targets with:
+Run full primary analyses on a machine with adequate compute resources:
 
 ```bash
-python scripts/check_manuscript_values.py
+python scripts/run_all_primary.py
 ```
 
-The checker contains conservative built-in audit/smoke checks and can be extended with a YAML file of manuscript metric targets.
+This runs the primary audit, empirical baselines, random-split vs strict-LOSO validation, descriptor-layer ablation, support-distance diagnosis, few-shot calibration, and error decomposition. It does not run external validation.
 
-## Full workflow commands (manual, optional)
+## Conclusion-Level Checks
+
+After full primary outputs are generated, run:
+
+```bash
+python scripts/check_reproducibility_conclusions.py
+```
+
+The checker writes:
+
+- `outputs/manuscript_check/conclusion_level_checks.csv`
+- `outputs/manuscript_check/conclusion_level_checks.json`
+
+These checks verify dataset identity and conclusion-level thresholds, for example strong random-split performance, stricter LOSO performance, a positive generalization gap, larger weak-support error, substantial soil-level bias contribution, and few-shot calibration remaining high-performing.
+
+## Individual Workflow Commands (manual, optional)
 
 Only run these after explicit confirmation for full experiments.
-Before full runs, users must confirm field mapping consistency (especially external features such as `logP/logS`) and available compute resources.
+Before full runs, users should confirm field mapping consistency and available compute resources. External validation should not be run until external features such as `logP/logS` are supplied and confirmed.
 
 ```bash
 python scripts/01_primary_empirical_baselines.py --config configs/primary_pah.yaml
@@ -64,7 +81,6 @@ python scripts/03_primary_layer_ablation.py --config configs/primary_pah.yaml
 python scripts/04_primary_ad_diagnosis.py --config configs/primary_pah.yaml
 python scripts/05_primary_few_shot_calibration.py --config configs/primary_pah.yaml
 python scripts/06_primary_error_decomposition.py --config configs/primary_pah.yaml
-python scripts/07_external_validation.py --config configs/external_neutral_organic.yaml
 ```
 
 ## Project structure

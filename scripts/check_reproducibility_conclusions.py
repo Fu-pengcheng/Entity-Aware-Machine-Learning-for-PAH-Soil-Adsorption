@@ -3,16 +3,16 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import math
+import operator
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import yaml
 
 
 WORKFLOW_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EXPECTED = "configs/expected_manuscript_values.yml"
+DEFAULT_CHECKS = "configs/reproducibility_conclusion_checks.yml"
 REPORT_DIR = WORKFLOW_ROOT / "outputs" / "manuscript_check"
 
 
@@ -20,11 +20,20 @@ class MissingReproducedValue(RuntimeError):
     pass
 
 
+OPERATORS: dict[str, Callable[[float, float], bool]] = {
+    "==": operator.eq,
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Compare reproduced primary outputs against expected manuscript values."
+        description="Check conclusion-level reproducibility for primary PAH analyses."
     )
-    parser.add_argument("--expected", default=DEFAULT_EXPECTED, help="Expected-value YAML config.")
+    parser.add_argument("--config", default=DEFAULT_CHECKS, help="Conclusion-check YAML config.")
     return parser.parse_args()
 
 
@@ -38,11 +47,11 @@ def resolve_path(path: str | Path) -> Path:
 def load_yaml(path: str | Path) -> dict[str, Any]:
     cfg_path = resolve_path(path)
     if not cfg_path.exists():
-        raise FileNotFoundError(f"Expected-value config not found: {cfg_path}")
+        raise FileNotFoundError(f"Conclusion-check config not found: {cfg_path}")
     with cfg_path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
     if not isinstance(data, dict):
-        raise ValueError(f"Expected-value YAML must contain a mapping: {cfg_path}")
+        raise ValueError(f"Conclusion-check YAML must contain a mapping: {cfg_path}")
     return data
 
 
@@ -169,38 +178,42 @@ REPRODUCERS = {
 
 
 def evaluate_item(item: str, spec: dict[str, Any]) -> dict[str, Any]:
-    expected = float(spec["expected"])
-    tolerance = float(spec.get("tolerance", 0))
+    op_text = str(spec["operator"])
+    threshold = float(spec["threshold"])
     row = {
         "item": item,
-        "expected": expected,
+        "criterion": f"{op_text} {threshold:g}",
+        "threshold": threshold,
         "reproduced": "",
-        "tolerance": tolerance,
-        "absolute_difference": "",
         "status": "MISSING",
+        "note": "",
     }
 
+    op = OPERATORS.get(op_text)
     reproducer = REPRODUCERS.get(item)
+    if op is None:
+        row["note"] = f"unsupported operator: {op_text}"
+        return row
     if reproducer is None:
+        row["note"] = "no reproducer configured"
         return row
 
     try:
         reproduced = float(reproducer())
-    except MissingReproducedValue:
+    except MissingReproducedValue as exc:
+        row["note"] = str(exc)
         return row
 
-    diff = abs(reproduced - expected)
     row["reproduced"] = reproduced
-    row["absolute_difference"] = diff
-    row["status"] = "PASS" if math.isclose(reproduced, expected, rel_tol=0.0, abs_tol=tolerance) else "FAIL"
+    row["status"] = "PASS" if op(reproduced, threshold) else "FAIL"
     return row
 
 
 def write_report(rows: list[dict[str, Any]]) -> None:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    fieldnames = ["item", "expected", "reproduced", "tolerance", "absolute_difference", "status"]
-    csv_path = REPORT_DIR / "expected_vs_reproduced.csv"
-    json_path = REPORT_DIR / "expected_vs_reproduced.json"
+    fieldnames = ["item", "criterion", "threshold", "reproduced", "status", "note"]
+    csv_path = REPORT_DIR / "conclusion_level_checks.csv"
+    json_path = REPORT_DIR / "conclusion_level_checks.json"
     with csv_path.open("w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -209,10 +222,10 @@ def write_report(rows: list[dict[str, Any]]) -> None:
 
 
 def main() -> int:
-    cfg = load_yaml(parse_args().expected)
+    cfg = load_yaml(parse_args().config)
     primary = cfg.get("primary", {})
     if not isinstance(primary, dict) or not primary:
-        raise ValueError("Expected-value config must contain non-empty 'primary' mapping.")
+        raise ValueError("Conclusion-check config must contain non-empty 'primary' mapping.")
 
     rows = [evaluate_item(item, spec) for item, spec in primary.items()]
     write_report(rows)
@@ -220,8 +233,7 @@ def main() -> int:
     for row in rows:
         print(
             f"{row['status']}\t{row['item']}\t"
-            f"expected={row['expected']}\treproduced={row['reproduced']}\t"
-            f"tolerance={row['tolerance']}\tdiff={row['absolute_difference']}"
+            f"criterion={row['criterion']}\treproduced={row['reproduced']}\t{row['note']}"
         )
 
     n_pass = sum(1 for row in rows if row["status"] == "PASS")
@@ -229,7 +241,7 @@ def main() -> int:
     n_missing = sum(1 for row in rows if row["status"] == "MISSING")
     print(f"Summary: PASS={n_pass}, FAIL={n_fail}, MISSING={n_missing}")
 
-    return 1 if n_fail else 0
+    return 1 if n_fail or n_missing else 0
 
 
 if __name__ == "__main__":

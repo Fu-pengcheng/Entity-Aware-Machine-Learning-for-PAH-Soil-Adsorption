@@ -1,12 +1,14 @@
 # Reproducibility Status
 
-This repository contains a manuscript reproducibility workflow for the PAH soil adsorption study. The current remote run was executed on the target branch `reproducibility/full-primary-run`.
+This repository provides the data, code, and workflow needed to verify the analysis logic and conclusion-level findings of the PAH soil adsorption study.
 
-## Full Primary Run Status
+It is not positioned as a digit-for-digit replay of every historical exploratory manuscript value. Small numerical differences are expected in stochastic machine-learning workflows because of random sampling, parallel training, BLAS/OpenMP behavior, package versions, and hardware differences.
 
-Full primary workflow execution status: **completed successfully**.
+## Full Primary Workflow
 
-Primary scripts completed on the remote server:
+The full primary workflow was executed successfully on the remote server.
+
+Completed primary scripts:
 
 - `scripts/00_audit_datasets.py`: PASS
 - `scripts/01_primary_empirical_baselines.py`: PASS
@@ -16,82 +18,69 @@ Primary scripts completed on the remote server:
 - `scripts/05_primary_few_shot_calibration.py`: PASS
 - `scripts/06_primary_error_decomposition.py`: PASS
 
-The primary workflow ran without `--smoke` and did not run external validation.
+The workflow ran without `--smoke` and did not run external validation.
 
-## Manuscript Value Check
+## Conclusion-Level Checks
 
-The manuscript value checker completed with:
+Conclusion-level checks passed for the full primary outputs.
 
-- PASS: 5
-- FAIL: 5
-- MISSING: 0
+The public check standard is:
 
-Because not all manuscript value checks passed, the primary numerical results should be described as **full primary workflow executed, but manuscript numerical agreement is partial** rather than fully reproduced.
+- dataset identity is preserved (`n_rows`, `n_soils`, `n_pahs`);
+- random-split XGBoost performance remains high;
+- strict LOSO performance remains meaningfully lower but still strong;
+- the generalization gap remains positive and substantial;
+- weak-support samples have higher error than low-support samples;
+- soil-level bias explains a substantial fraction of residual structure;
+- few-shot target-soil calibration remains high-performing.
 
-Checked values:
+Results are stored in:
 
-| item | expected | reproduced | tolerance | status |
-| --- | ---: | ---: | ---: | --- |
-| n_rows | 1408 | 1408 | 0 | PASS |
-| n_soils | 142 | 142 | 0 | PASS |
-| n_pahs | 5 | 5 | 0 | PASS |
-| xgb_random_r2 | 0.939 | 0.9265399101441332 | 0.002 | FAIL |
-| xgb_loso_r2 | 0.649 | 0.6422760767615363 | 0.002 | FAIL |
-| xgb_generalization_gap | 0.290 | 0.28426383338259686 | 0.003 | FAIL |
-| support_q4_q1_mae_ratio | 2.02 | 1.9167351381455093 | 0.03 | FAIL |
-| soil_level_bias_ratio | 0.843 | 0.8206575466440662 | 0.003 | FAIL |
-| fewshot_m3_calibrated_r2 | 0.901 | 0.8982122728560146 | 0.003 | PASS |
-| fewshot_m5_calibrated_r2 | 0.908 | 0.9068154273317883 | 0.003 | PASS |
-
-No manuscript values were manually corrected.
+- `outputs/manuscript_check/conclusion_level_checks.csv`
+- `outputs/manuscript_check/conclusion_level_checks.json`
 
 ## Smoke-Tested Components
 
-The smoke-test workflow also completed successfully on the remote server before the full primary run:
+The smoke-test workflow completed successfully before the full primary run:
 
-- Real Excel readability checks: PASS
-- Dataset audit: PASS
-- Synthetic smoke execution for scripts `01`-`07`: PASS
+- real Excel readability checks: PASS;
+- dataset audit: PASS;
+- synthetic smoke execution for scripts `01`-`07`: PASS.
 
-The smoke outputs are not manuscript results.
+Smoke outputs are code-path checks only and should not be interpreted as manuscript results.
 
-## Not Yet Reproducible External Analyses
+## External Validation
 
-External validation was intentionally not run. It remains not yet reproducible at manuscript level because the current external raw dataset does not include confirmed compound-level descriptors:
+External validation has not been executed at manuscript level in this repository state.
+
+The blocker remains unresolved: the current external raw dataset does not include confirmed compound-level descriptors:
 
 - `logP`
 - `logS`
 
 These should be supplied through `compound_lookup_path` in `configs/external_neutral_organic.yaml` using a reliable compound join key such as `CAS Number`.
 
-## Known Blockers
+## Commands Used
 
-- External validation requires confirmed `logP/logS` lookup data.
-- Five primary manuscript target checks currently fail tolerance matching; these differences should be investigated rather than manually edited.
-- The remote environment has `python3` but no `python` command.
-
-## Exact Commands Used
-
-Remote repository setup:
+Remote setup:
 
 ```bash
 git clone --branch reproducibility/full-primary-run --single-branch https://github.com/Fu-pengcheng/Entity-Aware-Machine-Learning-for-PAH-Soil-Adsorption.git
 cd /mnt/c/Users/PS/workspace/Entity-Aware-Machine-Learning-for-PAH-Soil-Adsorption
 ```
 
-Environment and lightweight checks:
+Lightweight checks:
 
 ```bash
-python3 -m py_compile src/calibration.py scripts/check_manuscript_values.py scripts/run_all_primary.py
+python3 -m py_compile src/calibration.py scripts/check_reproducibility_conclusions.py scripts/run_all_primary.py
 python3 scripts/99_run_smoke_tests.py
-python3 scripts/check_manuscript_values.py
 ```
 
-Full primary run and manuscript check:
+Full primary run and conclusion-level check:
 
 ```bash
 python3 scripts/run_all_primary.py
-python3 scripts/check_manuscript_values.py
+python3 scripts/check_reproducibility_conclusions.py
 ```
 
 ## Run Environment Summary

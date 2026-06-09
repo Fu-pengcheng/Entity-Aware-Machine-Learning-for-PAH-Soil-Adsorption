@@ -1,0 +1,11 @@
+﻿item,criterion,threshold,reproduced,status,note
+n_rows,== 1408,1408.0,1408.0,PASS,
+n_soils,== 142,142.0,142.0,PASS,
+n_pahs,== 5,5.0,5.0,PASS,
+xgb_random_r2,> 0.9,0.9,0.9265399101441332,PASS,
+xgb_loso_r2,> 0.6,0.6,0.6422760767615363,PASS,
+xgb_generalization_gap,> 0.25,0.25,0.28426383338259686,PASS,
+support_q4_q1_mae_ratio,> 1.7,1.7,1.9167351381455093,PASS,
+soil_level_bias_ratio,> 0.75,0.75,0.8206575466440662,PASS,
+fewshot_m3_calibrated_r2,> 0.88,0.88,0.8982122728560146,PASS,
+fewshot_m5_calibrated_r2,> 0.88,0.88,0.9068154273317883,PASS,
