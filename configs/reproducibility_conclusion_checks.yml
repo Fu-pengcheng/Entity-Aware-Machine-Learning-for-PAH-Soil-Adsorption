@@ -1,0 +1,31 @@
+primary:
+  n_rows:
+    operator: "=="
+    threshold: 1408
+  n_soils:
+    operator: "=="
+    threshold: 142
+  n_pahs:
+    operator: "=="
+    threshold: 5
+  xgb_random_r2:
+    operator: ">"
+    threshold: 0.90
+  xgb_loso_r2:
+    operator: ">"
+    threshold: 0.60
+  xgb_generalization_gap:
+    operator: ">"
+    threshold: 0.25
+  support_q4_q1_mae_ratio:
+    operator: ">"
+    threshold: 1.70
+  soil_level_bias_ratio:
+    operator: ">"
+    threshold: 0.75
+  fewshot_m3_calibrated_r2:
+    operator: ">"
+    threshold: 0.88
+  fewshot_m5_calibrated_r2:
+    operator: ">"
+    threshold: 0.88

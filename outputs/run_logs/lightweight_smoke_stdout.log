@@ -1,0 +1,11 @@
+                                         test_name status  n_rows                                                               message  seconds
+                                primary_excel_read   PASS  1408.0                                                               read ok    0.000
+                               external_excel_read   PASS 20945.0                                                               read ok    0.000
+                      scripts/00_audit_datasets.py   PASS     NaN Audit done.\nPrimary rows=1408, cols=12\nExternal rows=20945, cols=26    4.191
+ scripts/01_primary_empirical_baselines.py --smoke   PASS     NaN                                                              01 done.    1.798
+       scripts/02_primary_ml_validation.py --smoke   PASS     NaN                                                              02 done.   91.950
+      scripts/03_primary_layer_ablation.py --smoke   PASS     NaN                                                              03 done.  267.492
+        scripts/04_primary_ad_diagnosis.py --smoke   PASS     NaN                                                              04 done.   57.515
+scripts/05_primary_few_shot_calibration.py --smoke   PASS     NaN                                                              05 done.   65.449
+ scripts/06_primary_error_decomposition.py --smoke   PASS     NaN                                                              06 done.   66.211
+         scripts/07_external_validation.py --smoke   PASS     NaN                                                       07 done.\nsmoke    2.499

@@ -1,0 +1,7 @@
+{
+  "script": "02_primary_ml_validation.py",
+  "smoke": false,
+  "n_rows": 1408,
+  "n_soils": 142,
+  "GG": 0.28426383338259686
+}

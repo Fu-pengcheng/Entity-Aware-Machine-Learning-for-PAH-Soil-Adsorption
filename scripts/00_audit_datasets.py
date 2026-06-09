@@ -37,6 +37,19 @@ def _missing_report(df: pd.DataFrame) -> pd.DataFrame:
     ).sort_values("missing_rate", ascending=False)
 
 
+def _primary_pah_proxy_table(df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
+    named_cols = [c for c in ["PAH", "PAH_ID", "Compound", "Compound name"] if c in df.columns]
+    if named_cols:
+        col = named_cols[0]
+        return df[[col]].drop_duplicates().sort_values(col).reset_index(drop=True), col
+
+    descriptor_cols = [c for c in ["logKow", "HOMO", "LUMO"] if c in df.columns]
+    if descriptor_cols:
+        return df[descriptor_cols].drop_duplicates().reset_index(drop=True), "+".join(descriptor_cols)
+
+    return pd.DataFrame(), "not_available"
+
+
 def audit_primary(cfg: dict) -> dict:
     out_dir = ensure_dir("outputs/primary/tables")
     df_raw = read_table(cfg["input_data_path"], sheet_name=cfg.get("sheet_name", 0))
@@ -53,12 +66,19 @@ def audit_primary(cfg: dict) -> dict:
         gsize = df.groupby(gcol, as_index=False).size().rename(columns={"size": "n_samples"})
         write_df(gsize.sort_values("n_samples", ascending=False), out_dir / "audit_primary_group_sizes.csv")
 
+    pah_proxy, pah_basis = _primary_pah_proxy_table(df)
+    if not pah_proxy.empty:
+        write_df(pah_proxy, out_dir / "audit_primary_pah_proxy.csv")
+
     report = build_column_report(list(df_raw.columns), list(df.columns), PRIMARY_REQUIRED)
     write_df(report, out_dir / "audit_primary_required_column_check.csv")
 
     return {
         "n_rows": int(len(df)),
         "n_cols": int(df.shape[1]),
+        "n_soils": int(df[gcol].nunique()) if gcol in df.columns else None,
+        "n_pahs": int(len(pah_proxy)) if not pah_proxy.empty else None,
+        "pah_count_basis": pah_basis,
         "columns": list(df.columns),
         "missing_required_cols": report.loc[~report["present_after_mapping"], "required_column"].tolist(),
         "renamed": mapped.renamed,

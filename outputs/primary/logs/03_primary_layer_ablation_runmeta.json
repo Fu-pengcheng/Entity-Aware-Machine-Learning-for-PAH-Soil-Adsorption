@@ -1,0 +1,6 @@
+{
+  "script": "03_primary_layer_ablation.py",
+  "smoke": false,
+  "n_rows": 1408,
+  "n_soils": 142
+}

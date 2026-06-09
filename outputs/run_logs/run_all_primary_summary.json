@@ -1,0 +1,86 @@
+[
+  {
+    "step_index": 1,
+    "script": "scripts/00_audit_datasets.py",
+    "command": "/usr/bin/python3 scripts/00_audit_datasets.py",
+    "start_time": "2026-06-04T16:03:17",
+    "end_time": "2026-06-04T16:03:21",
+    "duration_seconds": 4.259,
+    "returncode": 0,
+    "status": "PASS",
+    "stdout_log": "outputs/run_logs/01_00_audit_datasets.stdout.log",
+    "stderr_log": "outputs/run_logs/01_00_audit_datasets.stderr.log"
+  },
+  {
+    "step_index": 2,
+    "script": "scripts/01_primary_empirical_baselines.py",
+    "command": "/usr/bin/python3 scripts/01_primary_empirical_baselines.py",
+    "start_time": "2026-06-04T16:03:21",
+    "end_time": "2026-06-04T16:03:29",
+    "duration_seconds": 7.452,
+    "returncode": 0,
+    "status": "PASS",
+    "stdout_log": "outputs/run_logs/02_01_primary_empirical_baselines.stdout.log",
+    "stderr_log": "outputs/run_logs/02_01_primary_empirical_baselines.stderr.log"
+  },
+  {
+    "step_index": 3,
+    "script": "scripts/02_primary_ml_validation.py",
+    "command": "/usr/bin/python3 scripts/02_primary_ml_validation.py",
+    "start_time": "2026-06-04T16:03:29",
+    "end_time": "2026-06-04T16:27:30",
+    "duration_seconds": 1440.681,
+    "returncode": 0,
+    "status": "PASS",
+    "stdout_log": "outputs/run_logs/03_02_primary_ml_validation.stdout.log",
+    "stderr_log": "outputs/run_logs/03_02_primary_ml_validation.stderr.log"
+  },
+  {
+    "step_index": 4,
+    "script": "scripts/03_primary_layer_ablation.py",
+    "command": "/usr/bin/python3 scripts/03_primary_layer_ablation.py",
+    "start_time": "2026-06-04T16:27:30",
+    "end_time": "2026-06-04T17:35:18",
+    "duration_seconds": 4068.055,
+    "returncode": 0,
+    "status": "PASS",
+    "stdout_log": "outputs/run_logs/04_03_primary_layer_ablation.stdout.log",
+    "stderr_log": "outputs/run_logs/04_03_primary_layer_ablation.stderr.log"
+  },
+  {
+    "step_index": 5,
+    "script": "scripts/04_primary_ad_diagnosis.py",
+    "command": "/usr/bin/python3 scripts/04_primary_ad_diagnosis.py",
+    "start_time": "2026-06-04T17:35:18",
+    "end_time": "2026-06-04T17:56:42",
+    "duration_seconds": 1284.675,
+    "returncode": 0,
+    "status": "PASS",
+    "stdout_log": "outputs/run_logs/05_04_primary_ad_diagnosis.stdout.log",
+    "stderr_log": "outputs/run_logs/05_04_primary_ad_diagnosis.stderr.log"
+  },
+  {
+    "step_index": 6,
+    "script": "scripts/05_primary_few_shot_calibration.py",
+    "command": "/usr/bin/python3 scripts/05_primary_few_shot_calibration.py",
+    "start_time": "2026-06-04T17:56:42",
+    "end_time": "2026-06-04T18:17:57",
+    "duration_seconds": 1274.884,
+    "returncode": 0,
+    "status": "PASS",
+    "stdout_log": "outputs/run_logs/06_05_primary_few_shot_calibration.stdout.log",
+    "stderr_log": "outputs/run_logs/06_05_primary_few_shot_calibration.stderr.log"
+  },
+  {
+    "step_index": 7,
+    "script": "scripts/06_primary_error_decomposition.py",
+    "command": "/usr/bin/python3 scripts/06_primary_error_decomposition.py",
+    "start_time": "2026-06-04T18:17:57",
+    "end_time": "2026-06-04T18:40:21",
+    "duration_seconds": 1343.41,
+    "returncode": 0,
+    "status": "PASS",
+    "stdout_log": "outputs/run_logs/07_06_primary_error_decomposition.stdout.log",
+    "stderr_log": "outputs/run_logs/07_06_primary_error_decomposition.stderr.log"
+  }
+]

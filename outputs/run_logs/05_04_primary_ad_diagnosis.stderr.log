@@ -1,0 +1,4 @@
+/home/cxx/.local/lib/python3.10/site-packages/sklearn/metrics/_regression.py:1283: UndefinedMetricWarning: R^2 score is not well-defined with less than two samples.
+  warnings.warn(msg, UndefinedMetricWarning)
+/mnt/c/Users/PS/workspace/Entity-Aware-Machine-Learning-for-PAH-Soil-Adsorption/src/ad_utils.py:70: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+  df.groupby("quartile", as_index=False)
