@@ -1,0 +1,10 @@
+{
+  "script": "09_ad_mahalanobis_vs_euclidean.py",
+  "smoke": false,
+  "loso_summary": {
+    "R2": 0.6519977286195937,
+    "RMSE": 1.0186331561941808,
+    "MAE": 0.7548704879742508,
+    "n_folds": 142
+  }
+}

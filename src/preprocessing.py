@@ -21,6 +21,7 @@ def fit_imputer(train_df: pd.DataFrame, cols: list[str], strategy: str = "median
 def transform_imputer(imputer: SimpleImputer, df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
     validate_columns(df, cols)
     out = df.copy()
+    out[cols] = out[cols].astype(float)
     out.loc[:, cols] = imputer.transform(out[cols])
     return out
 
@@ -35,6 +36,7 @@ def fit_scaler(train_df: pd.DataFrame, cols: list[str]) -> StandardScaler:
 def transform_scaler(scaler: StandardScaler, df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
     validate_columns(df, cols)
     out = df.copy()
+    out[cols] = out[cols].astype(float)
     out.loc[:, cols] = scaler.transform(out[cols])
     return out
 

@@ -1,0 +1,17 @@
+{
+  "script": "08_fewshot_freundlich_baseline.py",
+  "smoke": false,
+  "repeats": 30,
+  "m_values": [
+    1,
+    3,
+    5,
+    10
+  ],
+  "loso_summary": {
+    "R2": 0.6521894011142921,
+    "RMSE": 1.0183525964596838,
+    "MAE": 0.7535672589109154,
+    "n_folds": 142
+  }
+}

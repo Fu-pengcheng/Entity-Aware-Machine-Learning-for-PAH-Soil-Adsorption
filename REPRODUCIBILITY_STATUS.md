@@ -93,3 +93,18 @@ python3 scripts/check_reproducibility_conclusions.py
 - pip: `pip 22.0.2`
 
 Full environment details are recorded in `outputs/run_logs/remote_environment.txt`.
+
+## Revision Analyses (Scripts 08–13)
+
+The following scripts were added during manuscript revision and reproduce the additional robustness and sensitivity analyses reported in the revised manuscript and Supplementary Materials:
+
+- `scripts/08_fewshot_freundlich_baseline.py`: few-shot Freundlich isotherm baselines fitted per eligible soil on the same calibration samples (main-text Table 3 final column).
+- `scripts/09_ad_mahalanobis_vs_euclidean.py`: applicability-domain analysis recomputed with fold-internal Mahalanobis distance (ridge-regularized covariance), reported alongside Euclidean results (Table S8).
+- `scripts/10_hyperparameter_sensitivity.py`: one-at-a-time and joint perturbations of key XGBoost hyperparameters under the full LOSO protocol (Table S7).
+- `scripts/11_model_comparison_details.py`: per-model comparison details underlying the Layer 2 → Layer 3 gains across tree-based models (Table S6).
+- `scripts/12_layer_ablation_shap_folds.py`: per-fold SHAP attribution shares, rank statistics, and Top-5 frequencies across all 142 LOSO folds (revised Fig. 6).
+- `scripts/13_redraw_figs.py`: revised main-text figures with explicit variability information (Figs. 3, 5, 6).
+
+## External Validation
+
+`scripts/07_external_validation.py` implements the external-dataset workflow. The external entity grouping used in the revised manuscript is based on the original soil identifiers obtained from the database developers (Sun et al.); the per-record entity assignment is provided as a row-index mapping in the manuscript's Data S1 rather than redistributed in this repository.
